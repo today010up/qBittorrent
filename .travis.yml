@@ -168,11 +168,14 @@ script:
       BUILD_TOOL="ninja"
     fi
     if [ "$build_system" = "qmake" ]; then
-      ./bootstrap.sh && ./configure $qbtconf
       if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+        # OpenSSL isn't symlinked for security reasons
+        PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig:${PKG_CONFIG_PATH} ./bootstrap.sh && ./configure $qbtconf
         sed -i "" -e "s/^\(CC.*&&\).*$/\1 $CC/" src/Makefile  # workaround for Qt & ccache: https://bugreports.qt.io/browse/QTBUG-31034
         sed -i "" -e "s/^\(CXX.*&&\).*$/\1 $CXX/" src/Makefile
         sed -i "" -e 's/^\(CXXFLAGS.*\)$/\1 -Wno-unused-local-typedefs -Wno-inconsistent-missing-override/' src/Makefile
+      else
+        ./bootstrap.sh && ./configure $qbtconf
       fi
       BUILD_TOOL="make"
     fi
